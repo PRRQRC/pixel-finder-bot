@@ -51,21 +51,14 @@ function formatTrophies(trophies) {
   trophies.trophies.forEach(trophy => {
     st[trophy] = "";
   });
-  /*let text = "```diff\n" + st[0] + "First Placer: " + trophies.trophyPixels[0] + st[0] + "\n```";
-  text += "```fix\n" + st[1] + "Final Canvas: " + trophies.trophyPixels[1] + st[1] + "\n```";
-  text += "```ini\n" + st[2] + "End Game: " + trophies.trophyPixels[2] + st[2] + "\n```";*/
   let text = st[0] + "First Placer (green): `" + trophies.trophyPixels[0] + "`" + st[0] + "\n";
   text += st[1] + "Final Canvas (yellow): `" + trophies.trophyPixels[1] + "`" + st[1] + "\n";
-  text += st[2] + "End Game (blue): `" + trophies.trophyPixels[2] + "`" + st[2] + "\n";
+  text += st[2] + "End Game (blue): `" + trophies.trophyPixels[2] + "`" + st[2];
   return text;
 }
 function formatTextResponse(username, data) {
   let text = formatTemplate.repeat(1);
   return text.replace(/(%{username})/gi, username).replace(/(%{trophies})/gi, formatTrophies(data)).replace(/(%{hash})/gi, data.hash).replace(/(%{pixelCount})/gi, data.pixelCount);
-  /*let text = username + "'s stats for r/place 2022: \n\n";
-  text += "Pixels placed: `" + data.pixelCount + "`\n";
-  text += "Hash: `" + data.hash + "`\n";
-  return text;*/
 }
 
 client.login(token);

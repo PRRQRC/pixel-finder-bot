@@ -27,9 +27,9 @@ class MapGenerator {
     this.emitter.once(event, callback);
   }
 
-  convertCoords(x, y) {
+  convertCoords(x, y, center) {
     // width: 2000, height: 2000; r/place at stage 3 - x4 for 8k
-    return [ x * 4, y * 4 ];
+    return (!center) ? [ x * 4, y * 4 ] : [ x * 4 + 2, y * 4 + 2];
   }
   getColor(pixel) {
     let trophy = (pixel.trophies.length > 0) ? pixel.trophies[0] : -1;
@@ -52,10 +52,13 @@ class MapGenerator {
       ctx.fillStyle = this.getColor(data.pixels[i]).rgba;
       ctx.strokeStyle = this.getColor(data.pixels[i]).name;
 
-      ctx.arc(...this.convertCoords(data.pixels[i].x, data.pixels[i].y), 30, 0, 2 * Math.PI);
+      ctx.arc(...this.convertCoords(data.pixels[i].x, data.pixels[i].y, true), 30, 0, 2 * Math.PI);
       ctx.stroke();
-
       ctx.fill();
+
+      ctx.fillStyle = "black";
+      ctx.fillRect(...this.convertCoords(data.pixels[i].x, data.pixels[i].y), 4, 4);
+      ctx.stroke();
 
       ctx.closePath();
       ctx.restore();
