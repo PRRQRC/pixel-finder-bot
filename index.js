@@ -3,6 +3,8 @@ const SlashCommandCreator = require("./SlashCommandCreator.js");
 const { Client, Intents, MessageAttachment } = require('discord.js');
 const MapGenerator = require("./MapGenerator.js");
 
+const fs = require("fs");
+
 const clientId = (process.env["clientID"]) ? process.env["clientID"] : require("./config.json").clientId;
 const token = (process.env["token"]) ? process.env["token"] : require("./config.json").token;
 
@@ -10,6 +12,8 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const commands = new SlashCommandCreator(clientId, token, "./commands.js", client);
 const finder = new PixelFinder();
 const generator = new MapGenerator();
+
+const formatTemplate = fs.readFileSync("data/template.txt", "utf8");
 
 client.once('ready', () => {
   console.log('Ready!');
@@ -32,6 +36,7 @@ commands.on("command", async (interaction) => {
 
         await interaction.editReply({ content: formatTextResponse(user, finder.convert(data.data)), files: [ attachment ] });
       }).catch(async (err) => {
+        if (!err.status) console.log(err);
         await interaction.editReply({ content: "User not found!" });
       });
     break;
@@ -41,11 +46,26 @@ commands.on("command", async (interaction) => {
   }
 });
 
+function formatTrophies(trophies) {
+  let st = ["~~", "~~", "~~"];
+  trophies.trophies.forEach(trophy => {
+    st[trophy] = "";
+  });
+  /*let text = "```diff\n" + st[0] + "First Placer: " + trophies.trophyPixels[0] + st[0] + "\n```";
+  text += "```fix\n" + st[1] + "Final Canvas: " + trophies.trophyPixels[1] + st[1] + "\n```";
+  text += "```ini\n" + st[2] + "End Game: " + trophies.trophyPixels[2] + st[2] + "\n```";*/
+  let text = st[0] + "First Placer (green): `" + trophies.trophyPixels[0] + "`" + st[0] + "\n";
+  text += st[1] + "Final Canvas (yellow): `" + trophies.trophyPixels[1] + "`" + st[1] + "\n";
+  text += st[2] + "End Game (blue): `" + trophies.trophyPixels[2] + "`" + st[2] + "\n";
+  return text;
+}
 function formatTextResponse(username, data) {
-  let text = username + "'s stats for r/place 2022: \n\n";
+  let text = formatTemplate.repeat(1);
+  return text.replace(/(%{username})/gi, username).replace(/(%{trophies})/gi, formatTrophies(data)).replace(/(%{hash})/gi, data.hash).replace(/(%{pixelCount})/gi, data.pixelCount);
+  /*let text = username + "'s stats for r/place 2022: \n\n";
   text += "Pixels placed: `" + data.pixelCount + "`\n";
   text += "Hash: `" + data.hash + "`\n";
-  return text;
+  return text;*/
 }
 
 client.login(token);

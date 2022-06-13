@@ -28,12 +28,28 @@ class PixelDataConverter {
     let hash = data[0];
     let pixels = data.slice(1, data.length - 1); // remove _end_
     pixels = pixels.map(pixel => this.convertPixel(pixel));
-    let trophies = pixels.filter(pixel => pixel.trophies.length > 0);
+
+    let trophies = [];
+    let trophyCounts = [0, 0, 0];
+    pixels.filter(pixel => pixel.trophies.length > 0).map(el => {
+      el.trophies.forEach(trophy => {
+        if (!trophies.includes(trophy)) {
+          trophies.push(trophy);
+        }
+        trophyCounts[trophy]++;
+      });
+      //trophies.push(...el.trophies);
+      return el;
+    });
+    trophies.sort().filter((trophy, pos, arr) => { // remove duplicate trophies
+      return !pos || trophy != arr[pos - 1];
+    });
 
     return {
       hash: hash,
       pixels: pixels,
       trophies: trophies,
+      trophyPixels: trophyCounts,
       pixelCount: pixels.length
     }
   }

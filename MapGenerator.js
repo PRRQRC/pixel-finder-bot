@@ -11,6 +11,13 @@ class MapGenerator {
       this.emitter.emit("load");
     });
 
+    this.colorEnum = [
+      { index: 0, name: "red", rgba: "rgba(255, 0, 0, 0.5)" },
+      { index: 1, name: "green", rgba: "rgba(0, 255, 0, 0.5)" },
+      { index: 2, name: "yellow", rgba: "rgba(255, 255, 0, 0.5)" },
+      { index: 3, name: "blue", rgba: "rgba(0, 0, 255, 0.5)" }
+    ]
+
     return this;
   }
   on(event, callback) {
@@ -21,8 +28,12 @@ class MapGenerator {
   }
 
   convertCoords(x, y) {
-    // width: 2000, height: 2000; r/place at stage 3
+    // width: 2000, height: 2000; r/place at stage 3 - x4 for 8k
     return [ x * 4, y * 4 ];
+  }
+  getColor(pixel) {
+    let trophy = (pixel.trophies.length > 0) ? pixel.trophies[0] : -1;
+    return this.colorEnum[trophy + 1];
   }
 
   generateMap(data) {
@@ -35,11 +46,11 @@ class MapGenerator {
     ctx.drawImage(this.image, 0, 0, 8000, 8000); // resulting in dark tintent image
 
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-    ctx.strokeStyle = "red";
     for (let i = 0; i < data.pixels.length; i++) {
       ctx.save();
       ctx.beginPath();
+      ctx.fillStyle = this.getColor(data.pixels[i]).rgba;
+      ctx.strokeStyle = this.getColor(data.pixels[i]).name;
 
       ctx.arc(...this.convertCoords(data.pixels[i].x, data.pixels[i].y), 30, 0, 2 * Math.PI);
       ctx.stroke();

@@ -1,0 +1,8 @@
+%{username}'s stats for r/place 2022:
+
+Trophies:
+
+%{trophies}
+
+Pixels placed: `%{pixelCount}`
+Hash: `%{hash}`
