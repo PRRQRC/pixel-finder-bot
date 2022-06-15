@@ -85,8 +85,8 @@ class PixelFinder extends PixelDataConverter {
     });
   }
 
-  async getResults(username) {
-    let text = await this.getSiteContents("http://kisielo85.cba.pl/place2022/raw_result.php?nick=" + username);
+  async getResults(username, trophies) {
+    let text = await this.getSiteContents("http://kisielo85.cba.pl/place2022/raw_result.php?nick=" + username + "&tr=" + (trophies ? "true" : "false"));
     switch (text) {
       case "request_sent":
       case "processing":
@@ -110,10 +110,10 @@ class PixelFinder extends PixelDataConverter {
       break;
     }
   }
-  requestData(username) {
+  requestData(username, trophies) {
     return new Promise(async (res, rej) => {
       this.states[username] = "init";
-      let data = await this.getResults(username);
+      let data = await this.getResults(username, trophies);
       this.emitter.emit("data", data.data);
 
       if (data.status == 0) return rej(data);

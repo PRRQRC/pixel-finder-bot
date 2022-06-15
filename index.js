@@ -26,16 +26,36 @@ client.once('ready', () => {
 });
 
 commands.on("command", async (interaction) => {
+  const user = interaction.options.getString("user");
+  const trophies = interaction.options.getBoolean("trophies");
   switch(interaction.commandName) {
     case "get":
       await interaction.deferReply();
-      const user = interaction.options.getString("user");
 
-      finder.requestData(user).then(async (data) => {
+      finder.requestData(user, trophies).then(async (data) => {
         const attachment = new MessageAttachment(generator.generateMap(finder.convert(data.data)), user + ".png");
 
         await interaction.editReply({ content: formatTextResponse(user, finder.convert(data.data)), files: [ attachment ] });
       }).catch(async (err) => {
+        if (!err.status) console.log(err);
+        await interaction.editReply({ content: "User not found!" });
+      });
+    break;
+    case "getjson":
+      await interaction.deferReply();
+
+      finder.requestData(user, trophies).then(async (data) => {
+        const attachment = new MessageAttachment(Buffer.from(formatJSONResponse(user, finder.convert(data.data))), user + ".json");
+        await interaction.user.send({
+          files: [ attachment ]
+        })        
+
+        await interaction.editReply({ content: "DM with JSON data sent!" });
+      }).catch(async (err) => {
+        if (err.code == 50007) {
+          await interaction.editReply({ content: "I'm not able to send you direct messages!" });
+          return;
+        }
         if (!err.status) console.log(err);
         await interaction.editReply({ content: "User not found!" });
       });
@@ -46,14 +66,23 @@ commands.on("command", async (interaction) => {
   }
 });
 
+function formatJSONResponse(username, data) {
+  return JSON.stringify({
+    username: username,
+    hash: data.hash,
+    pixelsPlaced: data.pixelCount,
+    pixels: data.pixels,
+    trophies: data.trophies
+  });
+}
 function formatTrophies(trophies) {
   let st = ["~~", "~~", "~~"];
   trophies.trophies.forEach(trophy => {
     st[trophy] = "";
   });
-  let text = st[0] + "First Placer (green): `" + trophies.trophyPixels[0] + "`" + st[0] + "\n";
-  text += st[1] + "Final Canvas (yellow): `" + trophies.trophyPixels[1] + "`" + st[1] + "\n";
-  text += st[2] + "End Game (blue): `" + trophies.trophyPixels[2] + "`" + st[2];
+  let text = st[0] + ":green_circle:First Placer: `" + trophies.trophyPixels[0] + "`" + st[0] + "\n";
+  text += st[1] + ":yellow_circle:Final Canvas: `" + trophies.trophyPixels[1] + "`" + st[1] + "\n";
+  text += st[2] + ":blue_circle:End Game: `" + trophies.trophyPixels[2] + "`" + st[2];
   return text;
 }
 function formatTextResponse(username, data) {
