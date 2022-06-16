@@ -38,6 +38,7 @@ commands.on("command", async (interaction) => {
         await interaction.editReply({ content: formatTextResponse(user, finder.convert(data.data)), files: [ attachment ] });
       }).catch(async (err) => {
         if (!err.status) console.log(err);
+        if (err.status == -1) return interaction.editReply({ content: "Database doesn't seem to respond!" });
         await interaction.editReply({ content: "User not found!" });
       });
     break;
@@ -56,6 +57,7 @@ commands.on("command", async (interaction) => {
           await interaction.editReply({ content: "I'm not able to send you direct messages!" });
           return;
         }
+        if (err.status == -1) return interaction.editReply({ content: "Database doesn't seem to respond!" });
         if (!err.status) console.log(err);
         await interaction.editReply({ content: "User not found!" });
       });

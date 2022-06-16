@@ -85,7 +85,7 @@ class PixelFinder extends PixelDataConverter {
     });
   }
 
-  async getResults(username, trophies) {
+  async getResults(username, trophies, iterations=0) {
     let text = await this.getSiteContents("http://kisielo85.cba.pl/place2022/raw_result.php?nick=" + username + "&tr=" + (trophies ? "true" : "false"));
     switch (text) {
       case "request_sent":
@@ -94,11 +94,11 @@ class PixelFinder extends PixelDataConverter {
           this.emitter.emit("statusUpdate", { user: username, status: text });
           this.states[username] = text;
         }
-        return new Promise(async (res, rej) => {
+        return (iterations < 70) ? new Promise(async (res, rej) => {
           setTimeout(async () => {
-            res(await this.getResults(username));
+            res(await this.getResults(username, trophies, ++iterations));
           }, 1000);
-        });
+        }) : { status: -1, data: "database_not_responding" };
       break;
       case "not_found":
         delete this.states[username];
@@ -116,7 +116,7 @@ class PixelFinder extends PixelDataConverter {
       let data = await this.getResults(username, trophies);
       this.emitter.emit("data", data.data);
 
-      if (data.status == 0) return rej(data);
+      if (data.status <= 0) return rej(data);
       res(data);
     });
   }
